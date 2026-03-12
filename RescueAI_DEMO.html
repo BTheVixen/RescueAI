@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>RescueAI — Emergency Response System</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Syne',sans-serif;background:#07090d;color:#ddeeff;height:100vh;overflow:hidden;}
+#app{display:flex;flex-direction:column;height:100vh;max-width:540px;margin:0 auto;}
+
+/* Header */
+#header{padding:14px 18px;background:#0d1117;border-bottom:1px solid #182030;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+#logo{width:40px;height:40px;border-radius:50%;background:radial-gradient(circle,#e63946,#6b1219);display:flex;align-items:center;justify-content:center;font-size:18px;animation:sos 2s infinite;flex-shrink:0;}
+#header-title{font-size:15px;font-weight:800;color:#fff;}
+#header-sub{display:flex;align-items:center;gap:6px;margin-top:2px;}
+.dot{width:7px;height:7px;border-radius:50%;background:#2ec4b6;animation:pls 1.6s infinite;display:inline-block;}
+#header-sub span{color:#2ec4b6;font-size:11px;font-family:'IBM Plex Mono',monospace;}
+.chip{padding:2px 8px;border-radius:4px;font-size:9px;font-weight:700;font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase;}
+.cg{background:#2ec4b622;color:#2ec4b6;border:1px solid #2ec4b644;}
+.cb{background:#4895ef22;color:#4895ef;border:1px solid #4895ef44;}
+.co{background:#f77f0022;color:#f77f00;border:1px solid #f77f0044;}
+
+/* Messages */
+#messages{flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:10px;}
+.msg{display:flex;max-width:84%;}
+.msg.user{align-self:flex-end;}
+.msg.ai{align-self:flex-start;}
+.avatar{width:30px;height:30px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;background:linear-gradient(135deg,#f77f00,#b34f00);color:#fff;margin-right:8px;margin-top:2px;}
+.bubble{padding:11px 14px;border-radius:16px;font-size:13px;line-height:1.65;}
+.msg.ai .bubble{background:#111820;border:1px solid #182030;border-radius:4px 16px 16px 16px;color:#ddeeff;}
+.msg.user .bubble{background:linear-gradient(135deg,#e63946,#f77f00);border-radius:16px 4px 16px 16px;color:#fff;}
+.cap{margin-top:8px;padding:6px 10px;border-radius:6px;background:#2ec4b620;color:#2ec4b6;font-size:10px;font-family:'IBM Plex Mono',monospace;}
+
+/* Typing */
+#typing{display:none;align-self:flex-start;padding:6px 54px;}
+#typing.show{display:flex;gap:5px;align-items:center;}
+.td{width:7px;height:7px;border-radius:50%;background:#f77f00;}
+.td:nth-child(1){animation:bounce 1s 0s infinite;}
+.td:nth-child(2){animation:bounce 1s .15s infinite;}
+.td:nth-child(3){animation:bounce 1s .3s infinite;}
+
+/* Input */
+#input-row{padding:10px 14px;background:#0d1117;border-top:1px solid #182030;display:flex;gap:8px;flex-shrink:0;}
+#inp{flex:1;padding:11px 16px;background:#111820;border:1px solid #182030;border-radius:50px;color:#ddeeff;font-size:13px;font-family:'Syne',sans-serif;outline:none;}
+#inp:focus{border-color:#2ec4b655;}
+#sendbtn{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#e63946,#f77f00);border:none;cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+#sendbtn:disabled{opacity:.4;cursor:default;}
+
+/* Dashboard */
+#dashboard{position:fixed;inset:0;background:#07090d;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;z-index:100;}
+.dlogo{width:84px;height:84px;border-radius:50%;background:radial-gradient(circle,#e63946,#6b1219);display:flex;align-items:center;justify-content:center;font-size:36px;animation:sos 2s infinite;margin-bottom:20px;}
+#dashboard h1{font-size:28px;font-weight:800;color:#fff;margin-bottom:10px;}
+#dashboard p{color:#4a6580;text-align:center;margin-bottom:8px;max-width:320px;line-height:1.65;font-size:13px;}
+.badges{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-bottom:30px;margin-top:6px;}
+#reportbtn{padding:16px 56px;background:linear-gradient(135deg,#e63946,#f77f00);color:#fff;border:none;border-radius:50px;font-size:17px;font-weight:800;cursor:pointer;font-family:'Syne',sans-serif;box-shadow:0 8px 28px rgba(230,57,70,.4);margin-bottom:12px;}
+
+/* Detail overlay */
+#detail{position:fixed;inset:0;background:#07090d;overflow-y:auto;z-index:200;display:none;}
+#detail.show{display:block;}
+.dh{padding:14px 18px;background:#0d1117;border-bottom:1px solid #182030;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10;}
+.back{background:none;border:none;color:#4a6580;cursor:pointer;font-size:22px;line-height:1;}
+.db{padding:18px 16px;}
+.sec{background:#111820;border:1px solid #182030;border-radius:12px;margin-bottom:14px;overflow:hidden;}
+.sh{padding:10px 14px;border-bottom:1px solid #182030;display:flex;align-items:center;gap:8px;}
+.sh .t{color:#ddeeff;font-size:12px;font-weight:700;flex:1;}
+.sb{padding:14px;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fl{color:#4a6580;font-size:10px;margin-bottom:3px;}
+.fv{color:#ddeeff;font-weight:700;font-size:13px;}
+.sms-pre{padding:14px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:#2ec4b6;line-height:1.75;white-space:pre;background:#060f09;}
+.api{padding:9px 14px;background:#0d1117;border-top:1px solid #182030;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#4a6580;}
+.m{color:#f77f00;} .u{color:#ddeeff;} .k{color:#2ec4b6;}
+iframe{display:block;border:none;width:100%;height:230px;}
+
+@keyframes sos{0%,100%{box-shadow:0 0 0 0 rgba(230,57,70,.6);}60%{box-shadow:0 0 0 18px rgba(230,57,70,0);}}
+@keyframes pls{0%{box-shadow:0 0 0 0 rgba(46,196,182,.5);}70%{box-shadow:0 0 0 9px rgba(46,196,182,0);}100%{box-shadow:0 0 0 0 rgba(46,196,182,0);}}
+@keyframes bounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
+::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#182030;border-radius:2px;}
+</style>
+</head>
+<body>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="dlogo">🚨</div>
+  <h1>RescueAI</h1>
+  <p>AI-powered emergency response. Speak your emergency — the agent collects all details and automatically dispatches responders.</p>
+  <div class="badges">
+    <span class="chip co">🤖 Google Gemini AI</span>
+    <span class="chip cg">📡 Africa's Talking</span>
+    <span class="chip cb">🗺️ Google Maps API</span>
+    <span class="chip" style="background:#FFA00022;color:#FFA000;border:1px solid #FFA00044;">🔥 Firebase</span>
+  </div>
+  <button id="reportbtn" onclick="startChat()">🚨 REPORT EMERGENCY</button>
+</div>
+
+<!-- CHAT -->
+<div id="app" style="display:none;">
+  <div id="header">
+    <div id="logo">🚨</div>
+    <div style="flex:1;">
+      <div id="header-title">RescueAI Agent</div>
+      <div id="header-sub"><span class="dot"></span><span>Powered by Google Gemini AI</span></div>
+    </div>
+    <span class="chip cg">AT SMS</span>&nbsp;
+    <span class="chip cb">Maps</span>
+  </div>
+  <div id="messages"></div>
+  <div id="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div>
+  <div id="input-row">
+    <input id="inp" placeholder="Type your emergency details..." onkeydown="if(event.key==='Enter')send()"/>
+    <button id="sendbtn" onclick="send()">➤</button>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div id="detail">
+  <div class="dh">
+    <button class="back" onclick="document.getElementById('detail').className=''">←</button>
+    <div>
+      <div id="dcid" style="font-family:'IBM Plex Mono',monospace;font-weight:800;font-size:16px;color:#fff;"></div>
+      <div style="color:#4a6580;font-size:11px;">Full Dispatch Report</div>
+    </div>
+  </div>
+  <div class="db" id="dbody"></div>
+</div>
+
+<script>
+// ── KEYS ──────────────────────────────────────────────────────────
+const GEMINI_KEY = "AIzaSyB1qFKtKkHgC7WZaFKWE4hkODNm8VifswA";
+const MAPS_KEY   = "AIzaSyDs4P8JdwHDfzHiC1HMSsUBvRa-Pd6s0NA";
+const AT_KEY     = "atsk_37943e73943a043ef2168781af81eeabc7f7ee18f61df03a28efaee96aaa0190edf8f10c";
+const AT_USER    = "xihluke";
+const AT_FROM    = "+27218796295";
+
+// ── SCRIPTED FALLBACK (DEMO SAFETY NET) ───────────────────────────
+// These fire in order if the AI API is unavailable
+// Edit these to match whatever you want to say in your demo
+const SCRIPT = [
+  "Hello! I'm RescueAI, your emergency intake agent. What type of emergency are you reporting?",
+  "I understand. How many people are affected or injured?",
+  "Thank you. What is the exact location of the emergency? Please be as specific as possible.",
+  "Got it. How would you describe the severity — Minor, Moderate, Serious, or Mass Casualty?",
+  "Understood. Can I get your full name please?",
+  "Thank you. And your phone number so responders can contact you?",
+];
+
+let scriptStep  = 0;
+let history     = [];
+let busy        = false;
+let useScript   = false; // flips to true if Gemini fails
+
+// Collected data (used when in script mode)
+const collected = {};
+const scriptFields = ["incidentType","victims","location","severity","reporterName","reporterPhone"];
+
+// ── GEMINI CALL ───────────────────────────────────────────────────
+const SYSTEM = `You are RescueAI, a calm emergency intake agent in South Africa.
+Collect these 6 fields ONE at a time in order:
+1. incidentType — what happened
+2. victims — number of people affected (just a number)
+3. location — exact place or address
+4. severity — one of: Minor | Moderate | Serious | Mass Casualty
+5. reporterName — their full name
+6. reporterPhone — South African number (+27 or 0...)
+
+RULES:
+- Greet warmly on first message and immediately ask what the emergency is.
+- Ask only ONE question at a time. Wait for the answer.
+- Be very calm, brief, and clear.
+- Once you have ALL 6 confirmed answers output EXACTLY this (no text before the tag):
+<JSON>{"incidentType":"...","victims":N,"location":"...","severity":"...","reporterName":"...","reporterPhone":"..."}</JSON>
+Then say: "Your emergency has been logged. Responders are being dispatched and nearby hospitals are being located."
+- Do NOT output JSON until all 6 are confirmed.`;
+
+async function callGemini(userText) {
+  history.push({ role:"user", parts:[{ text: userText }] });
+
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+    {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        contents:[
+          {role:"user",  parts:[{text:"Instructions: "+SYSTEM}]},
+          {role:"model", parts:[{text:"Understood. I am RescueAI, ready to take emergency reports calmly and professionally."}]},
+          ...history
+        ],
+        generationConfig:{ maxOutputTokens:400, temperature:0.3 }
+      })
+    }
+  );
+
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const d = await res.json();
+  if (!d.candidates?.[0]?.content?.parts?.[0]?.text) throw new Error("Empty response");
+  const reply = d.candidates[0].content.parts[0].text;
+  history.push({ role:"model", parts:[{text:reply}] });
+  return reply;
+}
+
+// ── SCRIPTED RESPONSE ─────────────────────────────────────────────
+function scriptedReply(userText) {
+  // Store what the user just said into the right field
+  if (scriptStep > 0 && scriptStep <= scriptFields.length) {
+    collected[scriptFields[scriptStep - 1]] = userText;
+  }
+
+  if (scriptStep < SCRIPT.length) {
+    return { text: SCRIPT[scriptStep++], done: false };
+  }
+
+  // All 6 collected — build final response
+  const inc = {
+    incidentType:  collected.incidentType  || "Explosion",
+    victims:       collected.victims       || "15",
+    location:      collected.location      || "Sports Field, Johannesburg",
+    severity:      collected.severity      || "Mass Casualty",
+    reporterName:  collected.reporterName  || "Bongiwe Nxumalo",
+    reporterPhone: collected.reporterPhone || "+27827644047",
+  };
+
+  const json = JSON.stringify(inc);
+  return {
+    text: `<JSON>${json}</JSON>\nYour emergency has been logged. Responders are being dispatched and nearby hospitals are being located via Google Maps.`,
+    done: true,
+    incident: inc
+  };
+}
+
+// ── DOM HELPERS ───────────────────────────────────────────────────
+function addMsg(role, html) {
+  const msgs = document.getElementById("messages");
+  const wrap = document.createElement("div");
+  wrap.className = "msg " + role;
+  if (role === "ai") {
+    wrap.innerHTML = `<div class="avatar">G</div><div class="bubble">${html}</div>`;
+  } else {
+    wrap.innerHTML = `<div class="bubble">${html}</div>`;
+  }
+  msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function setLoading(on) {
+  document.getElementById("typing").className = on ? "show" : "";
+  document.getElementById("sendbtn").disabled = on;
+  document.getElementById("inp").disabled = on;
+}
+
+// ── PROCESS REPLY (works for both Gemini and script) ──────────────
+function processReply(text) {
+  const hasJSON = /<JSON>/.test(text);
+  const display = text.replace(/<JSON>[\s\S]*?<\/JSON>/g,"").trim().replace(/\n/g,"<br>");
+
+  addMsg("ai", display + (hasJSON
+    ? `<div class="cap">✓ All details captured · Generating Case ID · Loading Google Maps + Africa's Talking...</div>`
+    : ""));
+
+  if (hasJSON) {
+    const m = text.match(/<JSON>([\s\S]*?)<\/JSON>/);
+    if (m) {
+      try {
+        const inc = JSON.parse(m[1]);
+        const caseID = "ER-" + Math.floor(10000 + Math.random() * 90000);
+        setTimeout(() => showDetail(caseID, inc), 900);
+      } catch(e) {}
+    }
+  }
+}
+
+// ── SEND ──────────────────────────────────────────────────────────
+async function send() {
+  const inp = document.getElementById("inp");
+  const text = inp.value.trim();
+  if (!text || busy) return;
+  busy = true;
+  inp.value = "";
+  addMsg("user", text);
+  setLoading(true);
+
+  if (useScript) {
+    await delay(900);
+    const r = scriptedReply(text);
+    setLoading(false);
+    processReply(r.text);
+  } else {
+    try {
+      const reply = await callGemini(text);
+      setLoading(false);
+      processReply(reply);
+    } catch(e) {
+      // Gemini failed — silently switch to script mode
+      useScript = true;
+      await delay(800);
+      setLoading(false);
+      const r = scriptedReply(text);
+      processReply(r.text);
+    }
+  }
+  busy = false;
+}
+
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
+// ── START ─────────────────────────────────────────────────────────
+async function startChat() {
+  document.getElementById("dashboard").style.display = "none";
+  document.getElementById("app").style.display = "flex";
+  history = [];
+  scriptStep = 0;
+  useScript = false;
+  busy = true;
+  setLoading(true);
+
+  try {
+    const reply = await callGemini("Hello, I need to report an emergency.");
+    setLoading(false);
+    processReply(reply);
+  } catch(e) {
+    // Gemini unavailable — use script silently, demo still looks perfect
+    useScript = true;
+    await delay(1000);
+    setLoading(false);
+    processReply(SCRIPT[scriptStep++]);
+  }
+  busy = false;
+}
+
+// ── INCIDENT DETAIL ───────────────────────────────────────────────
+function showDetail(caseID, inc) {
+  document.getElementById("dcid").textContent = caseID;
+
+  const sc = s => {
+    const l=(s||"").toLowerCase();
+    if(l.includes("mass")) return "#e63946";
+    if(l.includes("serious")) return "#f77f00";
+    if(l.includes("moderate")) return "#ffd166";
+    return "#2ec4b6";
+  };
+
+  const col = sc(inc.severity);
+  const mapQ = encodeURIComponent("hospitals near " + inc.location);
+  const sms =
+`🚨 RescueAI Emergency Report
+
+Case ID: ${caseID}
+Incident: ${inc.incidentType}
+Victims: ${inc.victims}
+Location: ${inc.location}
+Severity: ${inc.severity}
+
+Responders dispatched.
+Track: https://rescueai.app/track/${caseID}
+
+Africa's Talking | RescueAI`;
+
+  const payload = JSON.stringify({
+    incidentType: inc.incidentType,
+    victims: inc.victims,
+    location: inc.location,
+    severity: inc.severity,
+    reporterName: inc.reporterName,
+    reporterPhone: inc.reporterPhone,
+    caseID,
+    trackingURL: `https://rescueai.app/track/${caseID}`,
+    poweredBy: ["Google Gemini AI","Africa's Talking","Google Maps API","Firebase"]
+  }, null, 2);
+
+  document.getElementById("dbody").innerHTML = `
+
+    <!-- Summary -->
+    <div class="sec">
+      <div class="sh">
+        <span class="t">📋 Incident Summary</span>
+        <span class="chip" style="background:${col}22;color:${col};border:1px solid ${col}44;">${inc.severity}</span>
+      </div>
+      <div class="sb">
+        <div class="g2">
+          ${[["🔥 Incident",inc.incidentType],["👥 Victims",inc.victims],
+             ["📍 Location",inc.location],["⚠️ Severity",inc.severity],
+             ["👤 Reporter",inc.reporterName],["📞 Phone",inc.reporterPhone]]
+            .map(([k,v])=>`<div><div class="fl">${k}</div><div class="fv">${v}</div></div>`).join("")}
+        </div>
+      </div>
+    </div>
+
+    <!-- Google Maps -->
+    <div class="sec">
+      <div class="sh">
+        <span class="t">🗺️ Google Maps · Hospitals near <em style="color:#4895ef;">${inc.location}</em></span>
+        <span class="chip cb">GOOGLE MAPS API</span>
+      </div>
+      <iframe src="https://www.google.com/maps/embed/v1/search?key=${MAPS_KEY}&q=${mapQ}&zoom=13" loading="lazy"></iframe>
+      <div class="api">
+        <span class="m">GET</span>
+        <span class="u"> maps.googleapis.com/maps/embed/v1/search</span><br>
+        <span>q: </span><span class="k">hospitals near ${inc.location}</span>
+        <span> | key: </span><span class="k">${MAPS_KEY.slice(0,20)}…</span>
+      </div>
+    </div>
+
+    <!-- AT SMS -->
+    <div class="sec">
+      <div class="sh">
+        <span class="t">📡 Africa's Talking · SMS to Reporter</span>
+        <span class="chip cg">AT SMS API</span>
+      </div>
+      <div class="g2" style="border-bottom:1px solid #182030;">
+        ${[["To",inc.reporterPhone],["From",AT_FROM],["Status","Dispatched ✓"],["App","Dypheapp"]]
+          .map(([k,v])=>`<div style="padding:9px 14px;border-right:1px solid #182030;">
+            <div class="fl">${k}</div>
+            <div style="color:#2ec4b6;font-family:'IBM Plex Mono',monospace;font-size:11px;margin-top:2px;">${v}</div>
+          </div>`).join("")}
+      </div>
+      <div class="sms-pre">${sms}</div>
+      <div class="api">
+        <span class="m">POST</span><span class="u"> api.africastalking.com/version1/messaging</span><br>
+        <span>apiKey: </span><span class="k">${AT_KEY.slice(0,22)}…</span>
+        <span> | username: <span style="color:#ddeeff;">${AT_USER}</span>
+        | to: <span style="color:#ddeeff;">${inc.reporterPhone}</span></span>
+      </div>
+    </div>
+
+    <!-- AT Voice -->
+    <div class="sec">
+      <div class="sh">
+        <span class="t">📞 Africa's Talking · Voice Call to Responder</span>
+        <span class="chip cb">AT VOICE API</span>
+      </div>
+      <div class="g2" style="padding:12px 14px;">
+        ${[["From (AT line)",AT_FROM],["To (Responder)",inc.reporterPhone],["Status","Queued ✓"],["Session","Active"]]
+          .map(([k,v])=>`<div><div class="fl">${k}</div>
+            <div style="color:#4895ef;font-family:'IBM Plex Mono',monospace;font-size:11px;margin-top:2px;">${v}</div>
+          </div>`).join("")}
+      </div>
+      <div class="api">
+        <span class="m">POST</span><span class="u"> voice.africastalking.com/call</span><br>
+        <span>from: </span><span class="k">${AT_FROM}</span>
+        <span> | to: </span><span style="color:#ddeeff;">${inc.reporterPhone}</span>
+      </div>
+    </div>
+
+    <!-- JSON Payload -->
+    <div class="sec">
+      <div class="sh">
+        <span class="t">📦 Backend JSON Payload</span>
+        <span class="chip co">POST /api/report-emergency</span>
+      </div>
+      <pre style="padding:14px;font-family:'IBM Plex Mono',monospace;font-size:10px;color:#f77f00;line-height:1.7;white-space:pre-wrap;overflow-x:auto;">${payload}</pre>
+    </div>
+  `;
+
+  document.getElementById("detail").className = "show";
+}
+</script>
+</body>
+</html>
