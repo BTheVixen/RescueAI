@@ -10,14 +10,14 @@ app.use(bodyParser.json()); // parse JSON
 
 //Twilio Config 
 const twilioClient = twilio('TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN'); // Replace with your Twilio keys
-const fromNumber = '0827644047'; // Your Twilio number
+const fromNumber = '+27827644047'; // Your Twilio number
 
 // Email Config
 const transporter = nodemailer.createTransport({
   service: 'gmail', // or your email service
   auth: {
     user: 'bongiwenxumalo54@gmail.com',
-    pass: 'zrue vqau pupq jjf' // App Password
+    pass: '0' // App Password
   }
 });
 

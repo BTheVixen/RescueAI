@@ -1,0 +1,37 @@
+{
+  "name": "bdac78c9-9ca5-4b32-b618-21d4c3bf8884",
+  "displayName": "Location",
+  "form": {
+    "parameters": [ {
+      "displayName": "location",
+      "required": true,
+      "entityType": "@sys.address",
+      "fillBehavior": {
+        "initialPromptFulfillment": {
+        
+        }
+      }
+    } ]
+  },
+  "entryFulfillment": {
+    "messages": [ {
+      "text": {
+        "text": [ "Where did the incident happen?", "Please provide us with the address?" ]
+      },
+      "languageCode": "en"
+    }, {
+      "text": {
+        "text": [ "Thank you, your emegerncy report has been received.", "Emergency responders will be notified." ]
+      },
+      "languageCode": "en"
+    } ]
+  },
+  "transitionRoutes": [ {
+    "condition": "$session.params.location != null",
+    "triggerFulfillment": {
+    
+    },
+    "targetPage": "Confirmation \u0026 Webhook",
+    "name": "976df4bd-5421-42f3-ad47-72f623a0637e"
+  } ]
+}

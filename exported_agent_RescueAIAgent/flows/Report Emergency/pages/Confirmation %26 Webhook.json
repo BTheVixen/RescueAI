@@ -1,0 +1,15 @@
+{
+  "name": "fef7fa52-8769-4777-a470-cbca5cf35b0a",
+  "displayName": "Confirmation \u0026 Webhook",
+  "form": {
+  
+  },
+  "entryFulfillment": {
+    "messages": [ {
+      "text": {
+        "text": [ "Thank you. Your emergency report has been received.\nEmergency responders will be notified." ]
+      },
+      "languageCode": "en"
+    } ]
+  }
+}

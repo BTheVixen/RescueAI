@@ -1,0 +1,43 @@
+{
+  "name": "544e44ea-64a3-4a47-ab97-82da689f886c",
+  "displayName": "Report Emergency",
+  "transitionRoutes": [ {
+    "intent": "report_emergency",
+    "condition": "reporting_incident = true",
+    "triggerFulfillment": {
+    
+    },
+    "targetPage": "Ask Incident Type",
+    "name": "6df3c3bc-7e6d-4e82-b4bd-28e52fe25596"
+  } ],
+  "eventHandlers": [ {
+    "targetPage": "Ask Incident Type",
+    "event": "sys.no-match-default",
+    "triggerFulfillment": {
+    
+    },
+    "name": "7cc1b387-5245-4ac7-9400-1def014cb1f5"
+  }, {
+    "targetPage": "Ask Incident Type",
+    "event": "sys.no-input-default",
+    "triggerFulfillment": {
+      "messages": [ {
+        "text": {
+          "text": [ "reporting an accident" ]
+        },
+        "languageCode": "en"
+      } ]
+    },
+    "name": "0f2ba066-4094-47d9-a8c6-c8e0afaa8dfa"
+  } ],
+  "nluSettings": {
+    "modelType": "MODEL_TYPE_ADVANCED",
+    "classificationThreshold": 0.30000001
+  },
+  "nluSettingsList": [ {
+    "modelType": "MODEL_TYPE_ADVANCED",
+    "classificationThreshold": 0.30000001,
+    "customConfigKey": "e6b3775e-64ea-4746-925f-9fa4db0be6f1",
+    "languageCode": "en"
+  } ]
+}

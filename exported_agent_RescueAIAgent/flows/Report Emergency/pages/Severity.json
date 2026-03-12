@@ -1,0 +1,32 @@
+{
+  "name": "fa03e503-6488-49b4-9646-4d29227920f8",
+  "displayName": "Severity",
+  "form": {
+    "parameters": [ {
+      "displayName": "severity",
+      "required": true,
+      "entityType": "@sys.any",
+      "fillBehavior": {
+        "initialPromptFulfillment": {
+        
+        }
+      }
+    } ]
+  },
+  "entryFulfillment": {
+    "messages": [ {
+      "text": {
+        "text": [ "Is there anyone Unconsious?", "Is there heavy bleeding?", "Are all the victims breathing?" ]
+      },
+      "languageCode": "en"
+    } ]
+  },
+  "transitionRoutes": [ {
+    "condition": "$session.params.severity != null",
+    "triggerFulfillment": {
+    
+    },
+    "targetPage": "Location",
+    "name": "0acb5208-27f0-4d95-9c09-6ea530ecf87d"
+  } ]
+}

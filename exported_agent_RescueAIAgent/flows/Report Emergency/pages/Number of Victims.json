@@ -1,0 +1,32 @@
+{
+  "name": "9fa5a028-f6a1-4ac1-bc8d-b6eb6b201fe5",
+  "displayName": "Number of Victims",
+  "form": {
+    "parameters": [ {
+      "displayName": "number_of_victims",
+      "required": true,
+      "entityType": "@sys.number",
+      "fillBehavior": {
+        "initialPromptFulfillment": {
+        
+        }
+      }
+    } ]
+  },
+  "entryFulfillment": {
+    "messages": [ {
+      "text": {
+        "text": [ "How many people are affected?" ]
+      },
+      "languageCode": "en"
+    } ]
+  },
+  "transitionRoutes": [ {
+    "condition": "$page.params.number_of_people != null",
+    "triggerFulfillment": {
+    
+    },
+    "targetPage": "Severity",
+    "name": "bc5ff98e-26b8-4468-9d32-fdadee90be6c"
+  } ]
+}

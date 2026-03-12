@@ -1,0 +1,32 @@
+{
+  "name": "e8b4f4ba-4d2f-472d-b0f5-ee09b43bb5d2",
+  "displayName": "Ask Incident Type",
+  "form": {
+    "parameters": [ {
+      "displayName": "incident_type",
+      "required": true,
+      "entityType": "@sys.any",
+      "fillBehavior": {
+        "initialPromptFulfillment": {
+        
+        }
+      }
+    } ]
+  },
+  "entryFulfillment": {
+    "messages": [ {
+      "text": {
+        "text": [ "What type of emergency is happening?" ]
+      },
+      "languageCode": "en"
+    } ]
+  },
+  "transitionRoutes": [ {
+    "condition": "$session.params.incident_type != null",
+    "triggerFulfillment": {
+    
+    },
+    "targetPage": "Number of Victims",
+    "name": "c811e4e1-3d53-488a-a965-f37c24b4a678"
+  } ]
+}
