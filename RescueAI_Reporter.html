@@ -673,6 +673,34 @@ function sevCol(s){
   return['#00d4b8','#004d44'];
 }
 
+async function sendRealSMS(to, caseID, inc) {
+  const message =
+`🚨 RescueAI — Case Logged
+
+Case ID : ${caseID}
+Type    : ${inc.incidentType}
+Location: ${inc.location}
+Severity: ${inc.severity}
+
+Help is on the way. Keep this number available.
+Track: rescueai.app/track/${caseID}
+
+— RescueAI Emergency System`;
+
+  try {
+    const res = await fetch("http://localhost:3333/send-sms", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ to, message })
+    });
+    const data = await res.json();
+    return data.success;
+  } catch (e) {
+    console.warn("SMS server not reachable:", e.message);
+    return false;
+  }
+}
+
 function showConfirmation(caseID, inc) {
   const msgs = document.getElementById('msgs');
 
@@ -682,6 +710,17 @@ function showConfirmation(caseID, inc) {
   document.getElementById('micbtn').disabled = true;
   document.getElementById('inp').placeholder = 'Case submitted. Stay safe.';
 
+  // Send real SMS to reporter
+  sendRealSMS(inc.reporterPhone, caseID, inc).then(sent => {
+    const smsEl = document.getElementById('sms-status-'+caseID);
+    if (smsEl) {
+      smsEl.textContent = sent
+        ? '📱 Confirmation SMS sent to ' + inc.reporterPhone
+        : '📱 SMS queued (start sms-server.js for live SMS)';
+      smsEl.style.color = sent ? 'var(--teal)' : 'var(--muted)';
+    }
+  });
+
   // Confirmation card inside chat
   const card = document.createElement('div');
   card.style.cssText = 'margin:10px 0;animation:fadeUp .3s ease both;';
@@ -689,8 +728,11 @@ function showConfirmation(caseID, inc) {
     <div style="background:#00d4b808;border:1px solid var(--teal-d);border-left:3px solid var(--teal);padding:16px 18px;">
       <div style="font-family:var(--mono);font-size:9px;color:var(--teal);letter-spacing:2px;margin-bottom:10px;">✓ CASE RECORDED</div>
       <div style="font-family:var(--cond);font-size:26px;font-weight:900;color:var(--text);margin-bottom:12px;">${caseID}</div>
-      <div style="font-family:var(--mono);font-size:9px;color:var(--teal);">
+      <div style="font-family:var(--mono);font-size:9px;color:var(--teal);margin-bottom:8px;">
         🔗 Track: rescueai.app/track/${caseID}
+      </div>
+      <div id="sms-status-${caseID}" style="font-family:var(--mono);font-size:9px;color:var(--muted);">
+        📱 Sending confirmation SMS...
       </div>
     </div>
     <div style="margin-top:8px;padding:10px 14px;background:var(--card);border:1px solid var(--border);font-family:var(--sans);font-size:13px;color:var(--muted);line-height:1.6;">
